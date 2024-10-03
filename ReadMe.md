@@ -1,4 +1,4 @@
-Task :
+Tentative Task :
 
 1. Grain Boundary Detection
 2. Grain Segmentation
@@ -22,14 +22,24 @@ Task :
 
 
 ## 1. Grain Boundary Detection
-1. Gray Scale Conversion
- 2.  morphological ( )
-2. Gaussian Blur
-3. Graph Segmentation
-4. Color Mapping
-5. Edge Detection
-   
-6. Overlaying Edges
+1. [x] Gray Scale Conversion (if image is not in gray scale): 
+2. [x] Gaussian Blur (to reduce noise and detail)
+3. [x] Morphological Operations (Dilation, Erosion) 
+   1. [x] Dilation : 	
+   - 	**Used for**:
+  	Expanding boundaries and Filling small gaps and connecting regions.
+   - 	**Structuring Element**:
+  	The operation compares each pixel with its neighborhood defined by a kernel (where the kernel is white, the pixel will be set to white).
+   - 	**Iterations**:
+  	In watershed algorithm, dilation helps enlarge the background regions to clearly distinguish objects from the background.
+    2. [x] Erosion :
+   - 	**Used for**:
+		The opposite of dilation, erosion shrinks the white areas by changing white pixels to black.
+   - 	**Noise Removal**: Helps shrink white regions.
+4. [ ] Graph Segmentation
+5. [ ] Color Mapping
+6. [ ] Edge Detection
+7. Overlaying Edges
 
 
 
