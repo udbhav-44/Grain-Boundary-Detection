@@ -46,7 +46,7 @@ def apply_gaussian_blur(image):
 
 
 #Morphological Operations
-
+# Type of kernel : Rectangular (can be changed to elliptical or cross shaped)
 def apply_erosion(image):
     kernel_size = cv2.getTrackbarPos('Kernel for Erosion Operation', 'Morphological Operations')
     iterations = cv2.getTrackbarPos('Iterations for Erosion Operation', 'Morphological Operations')
