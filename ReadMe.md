@@ -39,7 +39,7 @@ Tentative Task :
 4. [ ] Graph Segmentation
 5. [ ] Color Mapping
 6. [ ] Edge Detection
-7. Overlaying Edges
+7. [ ] Overlaying Edges
 
 
 
