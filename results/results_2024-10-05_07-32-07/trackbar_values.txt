@@ -1,0 +1,10 @@
+Kernel Size: 5
+Sigma: 0
+Kernel for Erosion Operation: 5
+Iterations for Erosion Operation: 1
+Kernel for Dilation Operation: 5
+Iterations for Dilation Operation: 1
+Threshold 1: 100
+Threshold 2: 200
+Kernel for Closing Operation: -1
+Iterations for Closing Operation: -1

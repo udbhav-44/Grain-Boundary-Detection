@@ -70,15 +70,27 @@ def apply_dilation(image):
     return cv2.dilate(image, kernel, iterations=iterations)
     
 
+# Create a window to control the Canny Edge Detection
+cv2.namedWindow('Canny Edge Detection')
+cv2.createTrackbar('Threshold 1', 'Canny Edge Detection', 100, 1000, lambda x: None)
+cv2.createTrackbar('Threshold 2', 'Canny Edge Detection', 200, 1000, lambda x: None)
+
+def apply_canny_edge_detection(image):
+    threshold1 = cv2.getTrackbarPos('Threshold 1', 'Canny Edge Detection')
+    threshold2 = cv2.getTrackbarPos('Threshold 2', 'Canny Edge Detection')
+    return cv2.Canny(image, threshold1, threshold2)
+
+
+
 
 while True:
     # Apply Gaussian blur with current trackbar settings
     blurred_image = apply_gaussian_blur(gray_image)
     eroded_image = apply_erosion(blurred_image)
     dilated_image = apply_dilation(eroded_image)
-    # Display the blurred image in the window
-    # cv2.imshow('Gaussian Blur', blurred_image)
-    cv2.imshow('Dilation', dilated_image)
+    
+    canny_image = apply_canny_edge_detection(dilated_image)
+    cv2.imshow('Dilation', canny_image)
 
     # Exit the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -93,8 +105,9 @@ while True:
         cv2.imwrite(f'results/results_{timestamp}/blurred_image.png', blurred_image)
         cv2.imwrite(f'results/results_{timestamp}/gray_image.png', gray_image)
         cv2.imwrite(f'results/results_{timestamp}/original_image.png', image)
+        cv2.imwrite(f'results/results_{timestamp}/canny_image.png', canny_image)
         print("Images saved successfully.")
-        # I want to save the values of the trackbars in a text file with timestamp
+        # save the values of the trackbars in a text file with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         with open(f"results/results_{timestamp}/trackbar_values.txt", "w") as f:
             f.write(f"Kernel Size: {cv2.getTrackbarPos('Kernel Size', 'Gaussian Blur')}\n")
@@ -103,6 +116,8 @@ while True:
             f.write(f"Iterations for Erosion Operation: {cv2.getTrackbarPos('Iterations for Erosion Operation', 'Morphological Operations')}\n")
             f.write(f"Kernel for Dilation Operation: {cv2.getTrackbarPos('Kernel for Dilation Operation', 'Morphological Operations')}\n")
             f.write(f"Iterations for Dilation Operation: {cv2.getTrackbarPos('Iterations for Dilation Operation', 'Morphological Operations')}\n")
+            f.write(f"Threshold 1: {cv2.getTrackbarPos('Threshold 1', 'Canny Edge Detection')}\n")
+            f.write(f"Threshold 2: {cv2.getTrackbarPos('Threshold 2', 'Canny Edge Detection')}\n")
         break
 
 cv2.destroyAllWindows()
