@@ -1,6 +1,0 @@
-Kernel Size: 12
-Sigma: 485
-Kernel for Erosion Operation: 15
-Iterations for Erosion Operation: 0
-Kernel for Dilation Operation: 3
-Iterations for Dilation Operation: 8

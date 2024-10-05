@@ -1,8 +1,0 @@
-Kernel Size: 9
-Sigma: 244
-Kernel for Erosion Operation: 1
-Iterations for Erosion Operation: 3
-Kernel for Dilation Operation: 6
-Iterations for Dilation Operation: 1
-Threshold 1: 262
-Threshold 2: 405
