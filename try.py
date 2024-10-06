@@ -1,62 +1,62 @@
 import cv2
 import numpy as np
+from skimage.segmentation import felzenszwalb
+from skimage import io
 from matplotlib import pyplot as plt
 
 # Load the image
 image_path = "0.jpeg"
 img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert image to RGB as required by skimage
 
-# Convert the image to grayscale
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# Step 1: Preprocessing - Gaussian Blur to remove noise
+blur = cv2.GaussianBlur(img_rgb, (5, 5), 0)
 
-# Apply a Gaussian Blur to reduce noise and improve thresholding
-blur = cv2.GaussianBlur(gray, (5, 5), 0)
+# Step 2: Edge Detection using Sobel or Canny (can try both and compare)
+edges = cv2.Canny(blur, 100, 200)
 
-# Adaptive thresholding to handle different lighting conditions
-thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                               cv2.THRESH_BINARY_INV, 11, 2)
+# Step 3: Graph-based segmentation using Felzenszwalb's algorithm
+segments = felzenszwalb(blur, scale=200, sigma=0.8, min_size=30)
 
-# Remove small noise through morphological operations (opening)
+# Step 4: Postprocessing - Morphological operations to clean up the segmentation
 kernel = np.ones((3, 3), np.uint8)
-opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+segments_cleaned = cv2.morphologyEx(segments.astype(np.uint8), cv2.MORPH_CLOSE, kernel, iterations=2)
 
-# Dilate to get sure background area
-sure_bg = cv2.dilate(opening, kernel, iterations=3)
+# Step 5: Optional - Overlay edges onto the segmented regions for clearer boundaries
+overlay = cv2.addWeighted(img_rgb, 0.7, cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB), 0.3, 0)
 
-# Distance transform to get sure foreground area (grains)
-dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
-_, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)
+# Step 6: Visualization
+plt.figure(figsize=(15, 10))
 
-# Finding unknown region (those areas that are neither sure foreground nor background)
-sure_fg = np.uint8(sure_fg)
-unknown = cv2.subtract(sure_bg, sure_fg)
+plt.subplot(2, 3, 1)
+plt.imshow(img_rgb)
+plt.title("Original Image")
+plt.axis("off")
 
-# Marker labelling
-_, markers = cv2.connectedComponents(sure_fg)
+plt.subplot(2, 3, 2)
+plt.imshow(blur)
+plt.title("Blurred Image (Preprocessing)")
+plt.axis("off")
 
-# Add one to all markers to ensure the background is not marked as zero
-markers = markers + 1
+plt.subplot(2, 3, 3)
+plt.imshow(edges, cmap='gray')
+plt.title("Edge Detection (Canny)")
+plt.axis("off")
 
-# Mark the unknown region with zero
-markers[unknown == 0] = 0
+plt.subplot(2, 3, 4)
+plt.imshow(segments, cmap='nipy_spectral')
+plt.title("Graph-Based Segmentation")
+plt.axis("off")
 
-# Apply the Watershed algorithm
-markers = cv2.watershed(img, markers)
+plt.subplot(2, 3, 5)
+plt.imshow(segments_cleaned, cmap='nipy_spectral')
+plt.title("Cleaned Segmentation (Postprocessing)")
+plt.axis("off")
 
-# Mark the boundaries of the segmented regions
-img[markers == -1] = [255, 0, 0]
+plt.subplot(2, 3, 6)
+plt.imshow(overlay)
+plt.title("Overlay of Segments and Edges")
+plt.axis("off")
 
-# Display the original and segmented images side by side
-plt.figure(figsize=(10, 10))
-
-plt.subplot(1, 2, 1)
-plt.imshow(cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB))
-plt.title('Original Image')
-plt.axis('off')
-
-plt.subplot(1, 2, 2)
-plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-plt.title('Segmented Image with Grain Boundaries')
-plt.axis('off')
-
+plt.tight_layout()
 plt.show()
