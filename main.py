@@ -48,6 +48,8 @@ def apply_gaussian_blur(image):
 #Morphological Operations
 # Type of kernel : Rectangular (can be changed to elliptical or cross shaped)
 def apply_erosion(image):
+    # Kernel type
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)) // Using default kernel
     kernel_size = cv2.getTrackbarPos('Kernel for Erosion Operation', 'Morphological Operations')
     iterations = cv2.getTrackbarPos('Iterations for Erosion Operation', 'Morphological Operations')
     
@@ -55,10 +57,12 @@ def apply_erosion(image):
     if kernel_size % 2 == 0:
         kernel_size += 1
     
-    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8) # Using custom kernel
     return cv2.erode(image, kernel, iterations=iterations)
 
 def apply_dilation(image):
+    # Kernel type
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
     kernel_size = cv2.getTrackbarPos('Kernel for Dilation Operation', 'Morphological Operations')
     iterations = cv2.getTrackbarPos('Iterations for Dilation Operation', 'Morphological Operations')
     
@@ -70,27 +74,20 @@ def apply_dilation(image):
     return cv2.dilate(image, kernel, iterations=iterations)
     
 
-# Create a window to control the Canny Edge Detection
-cv2.namedWindow('Canny Edge Detection')
-cv2.createTrackbar('Threshold 1', 'Canny Edge Detection', 100, 1000, lambda x: None)
-cv2.createTrackbar('Threshold 2', 'Canny Edge Detection', 200, 1000, lambda x: None)
 
-def apply_canny_edge_detection(image):
-    threshold1 = cv2.getTrackbarPos('Threshold 1', 'Canny Edge Detection')
-    threshold2 = cv2.getTrackbarPos('Threshold 2', 'Canny Edge Detection')
-    return cv2.Canny(image, threshold1, threshold2)
-
-
-
+def apply_contour(image):
+    edges = cv2.Canny(image, threshold1=50, threshold2=150)
+    contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    return cv2.drawContours(image, contours, -1, (0, 255, 0), 1)
 
 while True:
     # Apply Gaussian blur with current trackbar settings
     blurred_image = apply_gaussian_blur(gray_image)
     eroded_image = apply_erosion(blurred_image)
     dilated_image = apply_dilation(eroded_image)
+    contour_image = apply_contour(dilated_image)
     
-    canny_image = apply_canny_edge_detection(dilated_image)
-    cv2.imshow('Dilation', canny_image)
+    cv2.imshow('Contour', contour_image)
 
     # Exit the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -105,7 +102,7 @@ while True:
         cv2.imwrite(f'results/results_{timestamp}/blurred_image.png', blurred_image)
         cv2.imwrite(f'results/results_{timestamp}/gray_image.png', gray_image)
         cv2.imwrite(f'results/results_{timestamp}/original_image.png', image)
-        cv2.imwrite(f'results/results_{timestamp}/canny_image.png', canny_image)
+        cv2.imwrite(f'results/results_{timestamp}/contour_image.png', contour_image)
         print("Images saved successfully.")
         # save the values of the trackbars in a text file with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -116,9 +113,7 @@ while True:
             f.write(f"Iterations for Erosion Operation: {cv2.getTrackbarPos('Iterations for Erosion Operation', 'Morphological Operations')}\n")
             f.write(f"Kernel for Dilation Operation: {cv2.getTrackbarPos('Kernel for Dilation Operation', 'Morphological Operations')}\n")
             f.write(f"Iterations for Dilation Operation: {cv2.getTrackbarPos('Iterations for Dilation Operation', 'Morphological Operations')}\n")
-            f.write(f"Threshold 1: {cv2.getTrackbarPos('Threshold 1', 'Canny Edge Detection')}\n")
-            f.write(f"Threshold 2: {cv2.getTrackbarPos('Threshold 2', 'Canny Edge Detection')}\n")
-        break
+            break
 
 cv2.destroyAllWindows()
 
