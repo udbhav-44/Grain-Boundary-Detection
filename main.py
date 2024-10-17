@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import os
 from datetime import datetime
+# from skimage.segmentation import felzenszwalb
+from skimage.segmentation import slic
 ##################################
 # Work Update :
 # Grayscale
@@ -75,23 +77,34 @@ def apply_dilation(image):
     
 
 
-def apply_contour(image):
+def edge_detection(image):
     edges = cv2.Canny(image, threshold1=50, threshold2=150)
-    contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    return cv2.drawContours(image, contours, -1, (0, 255, 0), 1)
+    return edges
+
+def overlay_edges(image, edges):
+    edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    return cv2.addWeighted(image, 0.6, edges_colored, 0.4, 0)
+
 
 while True:
     # Apply Gaussian blur with current trackbar settings
     blurred_image = apply_gaussian_blur(gray_image)
     eroded_image = apply_erosion(blurred_image)
     dilated_image = apply_dilation(eroded_image)
-    contour_image = apply_contour(dilated_image)
-    
-    cv2.imshow('Contour', contour_image)
+    edges = edge_detection(dilated_image)
 
+    # Step 1: Edge Detection
+    edges = edge_detection(dilated_image)
+    
+    # Step 2: Overlaying the detected edges on the original image
+    overlay_image = overlay_edges(image, edges)
+    
+    # Display the result
+    cv2.imshow('Overlay Image', overlay_image)
+    # cv2.imshow('Graph Segmentation', graph_segmentation)
     # Exit the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        
+            
         #create a folder to store the images
         os.makedirs('results', exist_ok=True)
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -102,7 +115,8 @@ while True:
         cv2.imwrite(f'results/results_{timestamp}/blurred_image.png', blurred_image)
         cv2.imwrite(f'results/results_{timestamp}/gray_image.png', gray_image)
         cv2.imwrite(f'results/results_{timestamp}/original_image.png', image)
-        cv2.imwrite(f'results/results_{timestamp}/contour_image.png', contour_image)
+        cv2.imwrite(f'results/results_{timestamp}/overlay_image.png', overlay_image)
+        cv2.imwrite(f'results/results_{timestamp}/edges.png', edges)
         print("Images saved successfully.")
         # save the values of the trackbars in a text file with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -116,7 +130,6 @@ while True:
             break
 
 cv2.destroyAllWindows()
-
 
 
 
