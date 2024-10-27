@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import os
 from datetime import datetime
-# from skimage.segmentation import felzenszwalb
-from skimage.segmentation import slic
 ##################################
 # Work Update :
 # Grayscale
@@ -14,6 +12,13 @@ from skimage.segmentation import slic
 
 # Load the image
 image = cv2.imread('0.jpeg')
+
+# Print instructions
+print("Controls:")
+print("'e' - Apply erosion")
+print("'d' - Apply dilation")
+print("'r' - Reset to blurred image")
+print("'q' - Save and quit")
 
 def convert_to_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -86,41 +91,50 @@ def overlay_edges(image, edges):
     return cv2.addWeighted(image, 0.6, edges_colored, 0.4, 0)
 
 
+
+
 while True:
     # Apply Gaussian blur with current trackbar settings
-    blurred_image = apply_gaussian_blur(gray_image)
-    eroded_image = apply_erosion(blurred_image)
-    dilated_image = apply_dilation(eroded_image)
-    edges = edge_detection(dilated_image)
-
+    if 'processed_image' not in locals():
+        processed_image = apply_gaussian_blur(gray_image)
+    
+    # Check for key presses for morphological operations
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('e'):  # 'e' for erosion
+        processed_image = apply_erosion(processed_image)
+    elif key == ord('d'):  # 'd' for dilation
+        processed_image = apply_dilation(processed_image)
+    elif key == ord('r'):  # 'r' to reset
+        processed_image = apply_gaussian_blur(gray_image)
+        
     # Step 1: Edge Detection
-    edges = edge_detection(dilated_image)
+    edges = edge_detection(processed_image)
     
     # Step 2: Overlaying the detected edges on the original image
     overlay_image = overlay_edges(image, edges)
-    
-    # Display the result
+    # Display results
+    cv2.imshow('Processed Image', processed_image)
     cv2.imshow('Overlay Image', overlay_image)
-    # cv2.imshow('Graph Segmentation', graph_segmentation)
-    # Exit the loop if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    
+    if key == ord('q'):
+
             
-        #create a folder to store the images
-        os.makedirs('results', exist_ok=True)
+        # Create folders to store the images
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        os.makedirs(f'results/results_{timestamp}')
+        result_dir = f'results/results_{timestamp}'
+        os.makedirs(result_dir, exist_ok=True)
         
-        cv2.imwrite(f'results/results_{timestamp}/dilated_image.png', dilated_image)
-        cv2.imwrite(f'results/results_{timestamp}/eroded_image.png', eroded_image)
-        cv2.imwrite(f'results/results_{timestamp}/blurred_image.png', blurred_image)
-        cv2.imwrite(f'results/results_{timestamp}/gray_image.png', gray_image)
-        cv2.imwrite(f'results/results_{timestamp}/original_image.png', image)
-        cv2.imwrite(f'results/results_{timestamp}/overlay_image.png', overlay_image)
-        cv2.imwrite(f'results/results_{timestamp}/edges.png', edges)
+        cv2.imwrite(os.path.join(result_dir, 'processed_image.png'), processed_image)
+        cv2.imwrite(os.path.join(result_dir, 'blurred_image.png'), apply_gaussian_blur(gray_image))
+        cv2.imwrite(os.path.join(result_dir, 'gray_image.png'), gray_image)
+        cv2.imwrite(os.path.join(result_dir, 'original_image.png'), image)
+        cv2.imwrite(os.path.join(result_dir, 'overlay_image.png'), overlay_image)
+        cv2.imwrite(os.path.join(result_dir, 'edges.png'), edges)
+
         print("Images saved successfully.")
         # save the values of the trackbars in a text file with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        with open(f"results/results_{timestamp}/trackbar_values.txt", "w") as f:
+        with open(os.path.join(result_dir, 'trackbar_values.txt'), 'w') as f:
             f.write(f"Kernel Size: {cv2.getTrackbarPos('Kernel Size', 'Gaussian Blur')}\n")
             f.write(f"Sigma: {cv2.getTrackbarPos('Sigma', 'Gaussian Blur')}\n")
             f.write(f"Kernel for Erosion Operation: {cv2.getTrackbarPos('Kernel for Erosion Operation', 'Morphological Operations')}\n")

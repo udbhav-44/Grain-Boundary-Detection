@@ -1,4 +1,49 @@
-Tentative Task :
+# Grain Boundary Detection Project
+
+## Overview
+This project implements grain boundary detection and segmentation using computer vision techniques in Python. The main script (`main.py`) provides an interactive interface for processing microscopy images of grain structures.
+
+## Dependencies
+- OpenCV (cv2)
+- NumPy
+- scikit-image
+
+## Main Script (main.py)
+
+### Features
+1. **Interactive Controls**
+   - Gaussian Blur parameters (kernel size, sigma)
+   - Morphological operations (erosion and dilation kernel sizes, iterations)
+
+### Processing Pipeline
+1. **Image Pre-processing**
+   - Grayscale conversion
+   - Gaussian blur with adjustable parameters
+   - Morphological operations (erosion followed by dilation)
+
+2. **Edge Detection & Segmentation**
+   - Canny edge detection
+   - Edge overlay on original image
+   - Graph-based segmentation using Felzenszwalb algorithm
+
+### Output
+- Saves processed images in timestamped results directory:
+  - Original image
+  - Grayscale conversion
+  - Blurred image
+  - Eroded image
+  - Dilated image
+  - Edge detection
+  - Overlay image
+  - Graph segmentation
+- Saves trackbar parameters for reproducibility
+
+### Usage
+1. Run the script: `python main.py`
+2. Adjust parameters using trackbars
+3. Press 'q' to save results and exit
+
+## Tentative Tasks:
 
 1. Grain Boundary Detection
 2. Grain Segmentation
